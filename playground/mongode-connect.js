@@ -20,8 +20,8 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp',(err,db)=>{
 		}
 			console.log(JSON.stringify( result.ops,undefined,2 ));
 	});*/
-/*	db.collection('Users').insertOne({
-		name : "Sergio Agosto",
+	db.collection('Users').insertOne({
+		name : "Josh Nicols",
 		age : 27,
 		locations : 'mx'
 	},(err,result)=>{
@@ -29,7 +29,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp',(err,db)=>{
 			return console.log('Unable to insert todo ',err);
 		}
 			console.log(JSON.stringify( result.ops,undefined,2 ));
-	});*/
+	});
 
 
 	db.close();
