@@ -41,22 +41,22 @@ app.get('/todos/:id',(req,res)=>{
 
   Todo.findById( req.params.id ).then( todo=>{
     if( !todo ){
-      res.status(404).send({ message : "Not found" });
+      return res.status(404).send({ message : "Not found" });
     }
-    res.status(200).send( {todo} );
+    res.send( {todo} );
   }, e => { res.status(400).send(e) } );
 
 });
 
 app.delete('/todos/:id',(req,res)=>{
   if( !ObjectID.isValid( req.params.id )){
-    res.status(400).send({ message : "Invalid id" });
+    return res.status(400).send({ message : "Invalid id" });
   }
 
 
   Todo.findByIdAndRemove( req.params.id ).then( todo=>{
     if( !todo )
-      res.status(404).send({ message : "Not found" });
+      return res.status(404).send({ message : "Not found" });
     res.status(200).send({todo});
   }, e =>{res.status(500).send(e)});
 

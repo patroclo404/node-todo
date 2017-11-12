@@ -68,6 +68,7 @@ describe('GET /todos',()=>{
       .expect(200)
       .expect(res=>{
         expect(res.body.todos.length).toBe(2);
+        expect( todos.length ).toBe(2);
       })
       .end((err,res)=>{
         if(err)
@@ -101,5 +102,25 @@ describe('GET /todos',()=>{
       .get(`/todos/${ new ObjectID().toHexString() }`)
       .expect(404)
       .end(done);
+  });
+});
+
+describe('DELETE /todo',()=>{
+  it('should delete one todo',done=>{
+    request(app)
+      .delete(`/todos/${todos[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end((err,res)=>{
+        if( err ) return done(err);
+
+        Todo.findById( todos[0]._id ).then( todo=>{
+          expect(todo).toBe(null);
+          done();
+        }).catch(e=>done(e));
+
+      });
   });
 });
