@@ -1,12 +1,13 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
 
 const todos = [
-  { text : 'first tet' },
-  { text : 'second tet' }
+  {_id: new ObjectID(), text : 'first tet' },
+  {_id: new ObjectID(), text : 'second tet' }
 ];
 
 beforeEach(done=>{
@@ -58,7 +59,9 @@ describe('POST /todos',()=>{
       }).catch(e=>done(e));
     })
   });
+});
 
+describe('GET /todos',()=>{
   it('should get all todos',done=>{
     request(app)
       .get('/todos')
@@ -76,4 +79,27 @@ describe('POST /todos',()=>{
       })
   });
 
+  it('should return todo doc', (done) => {
+    request(app)
+      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end(done);
+  });
+
+  it('should return 400 for invalid id', (done) => {
+    request(app)
+      .get(`/todos/${123}`)
+      .expect(400)
+      .end(done);
+  });
+
+  it('should return 404 not found', (done) => {
+    request(app)
+      .get(`/todos/${ new ObjectID().toHexString() }`)
+      .expect(404)
+      .end(done);
+  });
 });
