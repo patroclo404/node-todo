@@ -1,3 +1,12 @@
+let env = process.env.NODE_ENV || 'development';
+
+if( env === 'development' ){
+  process.env.PORT = 3000;
+}else if( env === 'test' ){
+  process.env.PORT = 3000;
+}
+
+
 const {ObjectID} = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
