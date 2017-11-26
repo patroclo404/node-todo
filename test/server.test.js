@@ -61,6 +61,39 @@ describe('POST /todos',()=>{
   });
 });
 
+describe('PATCH /todos',()=>{
+  it('should update at todo completed field to true ',(done)=>{
+
+    let jsonToSend = {
+      completed : true
+    }
+
+    request(app)
+      .patch(`/todos/${todos[0]._id.toHexString()}`)
+      .send(jsonToSend)
+      .expect(200)
+      .expect((res)=>{
+        expect(res.body.todo.completed).toBe(true);
+      })
+      .end(done);
+  });
+
+  it('should update at todo text fiel to "text from unit test"',(done)=>{
+    let jsonToSend2 = {
+      completed : true,
+      text : 'text from unit test'
+    }
+    request(app)
+    .patch(`/todos/${todos[0]._id.toHexString()}`)
+    .send(jsonToSend2)
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todo.text).toBe(jsonToSend2.text);
+    })
+    .end(done);
+  });
+});
+
 describe('GET /todos',()=>{
   it('should get all todos',done=>{
     request(app)
