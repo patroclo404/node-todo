@@ -33,8 +33,6 @@ app.post('/todos',( req, res)=>{
   },error=>{
     res.status(400).send(error);
   });
-
-
 });
 
 app.get('/todos',( req, res ) => {
@@ -100,6 +98,19 @@ app.patch('/todos/:id',(req,res)=>{
     catch((e)=>{
       return res.status(400).send({message : 'Error updating todo'});
     })
+});
+
+//users
+
+app.post('/user',(req,res)=>{
+  let body = _.pick(req.body, ['email','password']);
+  let user = new User(body);
+
+  user.save().then(doc=>{
+    res.status(201).send(doc);
+  },error=>{
+    res.status(400).send(error);
+  });
 });
 
 app.listen(port, ()=>{
