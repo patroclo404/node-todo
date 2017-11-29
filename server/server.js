@@ -10,11 +10,12 @@ if( env === 'development' ){
 const {ObjectID} = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
-const _ = require('lodash')
+const _ = require('lodash');
 
 let {mongoose} = require('./db/mongoose');
 let { User } = require('./models/user');
 let { Todo } = require('./models/todo');
+let { authenticate } = require('./midelware/auth')
 
 let app = express();
 
@@ -107,10 +108,19 @@ app.post('/user',(req,res)=>{
   let user = new User(body);
 
   user.save().then(doc=>{
-    res.status(201).send(doc);
-  },error=>{
-    res.status(400).send(error);
+    //res.status(201).send(doc);
+    return user.generateAuthToken();
+  }).then((token)=>{
+    res.header('x-auth',token).status(201).send(user);
+  }).catch((error)=>{
+    res.status(400).send({error,message:'catch'});
   });
+});
+
+
+
+app.get('/user/me', authenticate, (req,res)=>{
+  res.send(res.user);
 });
 
 app.listen(port, ()=>{
