@@ -5,16 +5,10 @@ const {ObjectID} = require('mongodb');
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
 
-const todos = [
-  {_id: new ObjectID(), text : 'first tet' },
-  {_id: new ObjectID(), text : 'second tet' }
-];
+const {populateTodos,todos,users,populateUsers} = require('./seed/seed');
 
-beforeEach(done=>{
-  Todo.remove({}).then(()=>{
-    return Todo.insertMany(todos);
-  }).then(()=>done());
-});
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 describe('POST /todos',()=>{
   it('should create a new todo',(done)=>{
@@ -156,4 +150,103 @@ describe('DELETE /todo',()=>{
 
       });
   });
+});
+
+describe('GET users/me',()=>{
+  it('shoul get a user if authenticated ',(done)=>{
+    
+    let jsonToSend = {
+      completed : true
+    }
+
+    request(app)
+      .get(`/user/me`)
+      .set('x-auth',users[0].tokens[0].token)
+      .expect(200)
+      .expect((res)=>{
+        expect(res.body.email).toBe('a@mail.com');
+      })
+      .end(done);
+  });
+  it('soul get a 401 user if not authenticated ',(done)=>{
+    let jsonToSend = {
+      completed : true
+    }
+
+    request(app)
+      .get(`/user/me`)
+      .expect(401)
+      .end(done);
+  });
+});
+
+describe('POST /user',()=>{
+  it('should create a new user',(done)=>{
+
+    var user = {
+      email : 'c@mail.com',
+      password : '1234abs' 
+    };
+
+    request(app)
+      .post('/user')
+      .send(user)
+      .expect(201)
+      .expect((res)=>{
+        expect(res.body.email).toBe(user.email);
+      })
+      .end((err,res)=>{
+        if( err ){
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not create user',done=>{
+    var user = {
+    };
+
+    request(app)
+      .post('/user')
+      .send(user)
+      .expect(400)
+      .end(done());
+  });
+});
+
+describe('POST /user/login',()=>{
+  it('should login user with valid data',(done)=>{
+
+    var user = {
+      email : 'a@mail.com',
+      password : '12345678' 
+    };
+    request(app)
+      .post('/user/login')
+      .send(user)
+      .expect(200)
+      .expect((res)=>{
+        expect(res.body.email).toBe(user.email);
+        expect(res.body._id).toBe(`${users[0]._id}`);
+      })
+      .end((err,res)=>{
+        if( err ){
+          return done(err);
+        }
+        done();
+      });
+  });
+  it('should not login user with invalid data',(done)=>{
+    
+        var user = {
+          email : 'a@mail.com',
+          password : '123456789' 
+        };
+        request(app)
+          .post('/user/login')
+          .send(user)
+          .expect(400)
+          .end(done());
+      });
 });

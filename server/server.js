@@ -113,15 +113,33 @@ app.post('/user',(req,res)=>{
   }).then((token)=>{
     res.header('x-auth',token).status(201).send(user);
   }).catch((error)=>{
-    res.status(400).send({error,message:'catch'});
+    res.status(400).send({error,message:'bad request'});
   });
 });
-
-
 
 app.get('/user/me', authenticate, (req,res)=>{
   res.send(res.user);
 });
+
+app.post('/user/login',(req,res)=>{
+  let body = _.pick(req.body, ['email','password']);
+  User.findByCredentials(body).then((user)=>{
+    return user.generateAuthToken().then((token)=>{
+      res.header('x-auth',token).status(200).send(user);
+    });
+  }).catch((error)=>{
+    res.status(400).send({error,message:'Bad request'});
+  })
+});
+
+app.delete('/user/me',authenticate,(req,res)=>{
+
+  res.user.removeToken(res.token).then(() => {
+    res.status(200).send();
+  }, () => {
+    res.status(400).send();
+  });
+})
 
 app.listen(port, ()=>{
   console.log(`Started up at port ${port}`);

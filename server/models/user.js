@@ -50,6 +50,22 @@ UserSchema.statics.findByToken = function (token) {
   });
 };
 
+UserSchema.statics.findByCredentials = function (cred) {
+  let User = this;
+  return User.findOne({
+    'email' : cred.email
+  }).then((user)=>{
+    if(!user) return Promise.reject();
+
+    return new Promise((resolve,reject)=>{
+      bcrypt.compare(cred.password,user.password,(err, res)=>{
+        if( err || !res ) return reject()
+        return resolve(user);
+      })
+    });    
+  })
+};
+
 UserSchema.methods.toJSON = function () {
   let user = this;
   let userObject = user.toObject();
@@ -67,6 +83,15 @@ UserSchema.methods.generateAuthToken = function(){
   return user.save().then(()=>{
     return token;
   })
+};
+
+UserSchema.methods.removeToken = function (token) {
+  var user = this;
+  return user.update({
+    $pull : {
+      tokens : {token}
+    }
+  });
 };
 
 UserSchema.pre('save', function(next){
