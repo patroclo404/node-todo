@@ -23,10 +23,11 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-app.post('/todos',( req, res)=>{
+app.post('/todos', authenticate, ( req, res)=>{
   
   var todo = new Todo({
-    text : req.body.text
+    text : req.body.text,
+    _creator : res.user._id
   });
 
   todo.save().then(doc=>{
@@ -36,9 +37,11 @@ app.post('/todos',( req, res)=>{
   });
 });
 
-app.get('/todos',( req, res ) => {
+app.get('/todos', authenticate, ( req, res ) => {
 
-  Todo.find().then( todos => {
+  Todo.find({
+    _creator : req.user.id
+  }).then( todos => {
     res.send({todos}) 
   }, error => {
     res.status(400).send(error);
@@ -46,7 +49,7 @@ app.get('/todos',( req, res ) => {
 
 });
 
-app.get('/todos/:id',(req,res)=>{
+app.get('/todos/:id', authenticate, (req,res)=>{
 
   Todo.findById( req.params.id ).then( todo=>{
     if( !todo ){
@@ -57,7 +60,7 @@ app.get('/todos/:id',(req,res)=>{
 
 });
 
-app.delete('/todos/:id',(req,res)=>{
+app.delete('/todos/:id', authenticate, (req,res)=>{
   if( !ObjectID.isValid( req.params.id )){
     return res.status(400).send({ message : "Invalid id" });
   }
@@ -72,7 +75,7 @@ app.delete('/todos/:id',(req,res)=>{
 
 });
 
-app.patch('/todos/:id',(req,res)=>{
+app.patch('/todos/:id', authenticate, (req,res)=>{
   let id = req.params.id;
   let body = _.pick(req.body, ['text','completed']);
 
@@ -132,12 +135,12 @@ app.post('/user/login',(req,res)=>{
   })
 });
 
-app.delete('/user/me',authenticate,(req,res)=>{
+app.delete('/user/me/token',authenticate,(req,res)=>{
 
   res.user.removeToken(res.token).then(() => {
     res.status(200).send();
   }, () => {
-    res.status(400).send();
+    res.status(400).send({});
   });
 })
 

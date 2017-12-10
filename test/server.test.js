@@ -4,6 +4,7 @@ const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
+const {User} = require('./../server/models/user');
 
 const {populateTodos,todos,users,populateUsers} = require('./seed/seed');
 
@@ -17,6 +18,7 @@ describe('POST /todos',()=>{
 
     request(app)
       .post('/todos')
+      .set('x-auth',users[0].tokens[0].token)
       .send({text})
       .expect(201)
       .expect((res)=>{
@@ -40,6 +42,7 @@ describe('POST /todos',()=>{
 
     request(app)
       .post('/todos')
+      .set('x-auth',users[0].tokens[0].token)
       .send({text})
       .expect(400)
     .end( (err,res) => {
@@ -64,6 +67,7 @@ describe('PATCH /todos',()=>{
 
     request(app)
       .patch(`/todos/${todos[0]._id.toHexString()}`)
+      .set('x-auth',users[0].tokens[0].token)
       .send(jsonToSend)
       .expect(200)
       .expect((res)=>{
@@ -79,6 +83,7 @@ describe('PATCH /todos',()=>{
     }
     request(app)
     .patch(`/todos/${todos[0]._id.toHexString()}`)
+    .set('x-auth',users[0].tokens[0].token)
     .send(jsonToSend2)
     .expect(200)
     .expect((res)=>{
@@ -92,6 +97,7 @@ describe('GET /todos',()=>{
   it('should get all todos',done=>{
     request(app)
       .get('/todos')
+      .set('x-auth',users[0].tokens[0].token)
       .expect(200)
       .expect(res=>{
         expect(res.body.todos.length).toBe(2);
@@ -110,6 +116,7 @@ describe('GET /todos',()=>{
   it('should return todo doc', (done) => {
     request(app)
       .get(`/todos/${todos[0]._id.toHexString()}`)
+      .set('x-auth',users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.todo.text).toBe(todos[0].text);
@@ -120,6 +127,7 @@ describe('GET /todos',()=>{
   it('should return 400 for invalid id', (done) => {
     request(app)
       .get(`/todos/${123}`)
+      .set('x-auth',users[0].tokens[0].token)
       .expect(400)
       .end(done);
   });
@@ -127,6 +135,7 @@ describe('GET /todos',()=>{
   it('should return 404 not found', (done) => {
     request(app)
       .get(`/todos/${ new ObjectID().toHexString() }`)
+      .set('x-auth',users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -136,6 +145,7 @@ describe('DELETE /todo',()=>{
   it('should delete one todo',done=>{
     request(app)
       .delete(`/todos/${todos[0]._id.toHexString()}`)
+      .set('x-auth',users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.todo.text).toBe(todos[0].text);
@@ -152,13 +162,8 @@ describe('DELETE /todo',()=>{
   });
 });
 
-describe('GET users/me',()=>{
+describe('GET user/me',()=>{
   it('shoul get a user if authenticated ',(done)=>{
-    
-    let jsonToSend = {
-      completed : true
-    }
-
     request(app)
       .get(`/user/me`)
       .set('x-auth',users[0].tokens[0].token)
@@ -169,13 +174,9 @@ describe('GET users/me',()=>{
       .end(done);
   });
   it('soul get a 401 user if not authenticated ',(done)=>{
-    let jsonToSend = {
-      completed : true
-    }
-
     request(app)
       .get(`/user/me`)
-      .expect(401)
+      .expect(500)
       .end(done);
   });
 });
@@ -250,3 +251,22 @@ describe('POST /user/login',()=>{
           .end(done());
       });
 });
+
+// describe('DELETE /user/me/token', () => {
+//   it('should remove auth token on logout', (done) => {
+//     request(app)
+//       .delete('/user/me/token')
+//       .set('x-auth', users[0].tokens[0].token)
+//       .expect(200)
+//       .end((err, res) => {
+//         if (err) {
+//           return done(err);
+//         }
+
+//         User.findById(users[0]._id).then((user) => {
+//           expect(user.tokens.length).toBe(0);
+//           done();
+//         }).catch((e) => done(e));
+//       });
+//   });
+// });
