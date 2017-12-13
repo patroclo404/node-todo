@@ -1,10 +1,4 @@
-let env = process.env.NODE_ENV || 'development';
-
-if( env === 'development' ){
-  process.env.PORT = 3000;
-}else if( env === 'test' ){
-  process.env.PORT = 3000;
-}
+require('./config/config');
 
 
 const {ObjectID} = require('mongodb');
@@ -40,7 +34,7 @@ app.post('/todos', authenticate, ( req, res)=>{
 app.get('/todos', authenticate, ( req, res ) => {
 
   Todo.find({
-    _creator : req.user.id
+    _creator : res.user.id
   }).then( todos => {
     res.send({todos}) 
   }, error => {
@@ -51,7 +45,10 @@ app.get('/todos', authenticate, ( req, res ) => {
 
 app.get('/todos/:id', authenticate, (req,res)=>{
 
-  Todo.findById( req.params.id ).then( todo=>{
+  Todo.findOne({ 
+    _id : req.params.id ,
+    _creator : res.user._id
+  }).then( todo=>{
     if( !todo ){
       return res.status(404).send({ message : "Not found" });
     }
@@ -66,7 +63,10 @@ app.delete('/todos/:id', authenticate, (req,res)=>{
   }
 
 
-  Todo.findByIdAndRemove( req.params.id ).then( todo=>{
+  Todo.findOneAndRemove({
+    _id : req.params.id ,
+    _creator : res.user._id
+  }).then( todo=>{
     if( !todo )
       return res.status(404).send({ message : "Not found" });
     res.status(200).send({todo});
@@ -89,15 +89,17 @@ app.patch('/todos/:id', authenticate, (req,res)=>{
     body.completedAt = null;
   }
 
-  Todo.findByIdAndUpdate( id,
+  Todo.findOneAndUpdate(
+    {
+      _id : req.params.id ,
+      _creator : res.user._id
+    },
     { $set : body },
-    { new : true }).
-    then((todo)=>{
+    { new : true }
+  ).then((todo)=>{
       if( !todo )
         return res.status(404).send({message : 'Unable to find todo'});
-
-      res.send({todo});
-      
+      res.send({todo});      
     }).
     catch((e)=>{
       return res.status(400).send({message : 'Error updating todo'});
