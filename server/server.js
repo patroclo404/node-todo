@@ -122,17 +122,18 @@ app.post('/user',(req,res)=>{
   });
 });
 
-app.get('/user/me', authenticate, (req,res)=>{
+app.get('/user/me', authenticate, (req,res) => {
   res.send(res.user);
 });
 
-app.post('/user/login',(req,res)=>{
+app.post('/user/login',(req,res) => {
   let body = _.pick(req.body, ['email','password']);
-  User.findByCredentials(body).then((user)=>{
-    return user.generateAuthToken().then((token)=>{
+  User.findByCredentials(body).then((user) => {
+    return user.generateAuthToken().then((token) => {
       res.header('x-auth',token).status(200).send(user);
     });
-  }).catch((error)=>{
+  }).catch((error) => {
+    console.log(error)
     res.status(400).send({error,message:'Bad request'});
   })
 });
