@@ -6,7 +6,7 @@
   },
   "development" : {
     "PORT" : 3000,
-    "MONGODB_URI" : "mongodb://localhost:27017/TodoApp",
+    "MONGODB_URI" : "mongodb://root:root@ds257485.mlab.com:57485/todoappnode",
     "JWT_SECRET" : "QWERT2345"
   }
 }
